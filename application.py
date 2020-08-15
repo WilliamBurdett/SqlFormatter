@@ -120,4 +120,4 @@ def get_tokens(sql):
 
 
 if __name__ == "__main__":
-    print(main(get_sql('tests/test_3_input.sql')))
+    print(main(get_sql('tests/test_2_input.sql')))

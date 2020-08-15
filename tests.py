@@ -3,6 +3,7 @@ import application
 errors = []
 
 for number in range(1, 4):
+    number = 2
     input_sql = f'tests/test_{number}_input.sql'
     expected_sql = application.main(application.get_sql(f'tests/test_{number}_expected.sql'))
 
