@@ -16,17 +16,27 @@ class SpecialWords:
     def sw_open_comment(linked_list: LinkedList, node: Node):
         close_node: Node = node.next_node
         length: int = 0
-        splits: list[Node] = list()
-        while close_node.data != "*/":
-            if length > 20:
+        nodes: list[Node] = []
+        splits: list[Node] = []
+        while close_node is not None:
+            if close_node.data == "*/":
+                break
+            if length > 40 and close_node.next_node.data != '*/':
                 splits.append(close_node)
                 length = 0
             length += len(close_node.data)
-            close_node.special_operation = Operation(return_after=False)
+            nodes.append(close_node)
             close_node = close_node.next_node
-        close_node.prev_node_original.special_operation = None
-        for split in splits:
-            split.special_operation = Operation()
+        if close_node is not None:
+            for modify_node in nodes:
+                modify_node.special_operation = Operation(return_after=False)
+
+            if len(splits) > 0:
+                close_node.prev_node_original.special_operation = None
+                for split in splits:
+                    split.special_operation = Operation()
+            else:
+                return Operation(return_after=False)
         return Operation()
 
     @staticmethod
@@ -320,6 +330,7 @@ class SpecialWords:
         distances = [
             linked_list.get_distance_to_data(node, "SELECT", 1),
             linked_list.get_distance_to_data(node, "WITH", 1),
+            linked_list.get_distance_to_data(node, '/*', 1),
         ]
         if 1 in distances:
             return Operation(indent_direction=1)

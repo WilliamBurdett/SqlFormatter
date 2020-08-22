@@ -39,14 +39,36 @@ def fix_commas(linked_list: LinkedList):
         node = next_node
 
 
+def replace_comment_with_block(sql):
+    lines = sql.split('\n')
+    for index, line in enumerate(lines):
+        if '--' in line:
+            line = line.replace('--', '/* ')
+            line = f'{line} */'
+            lines[index] = line
+    return '\n'.join(lines)
+
+
+def replace_single_block_comments(processed_sql: str):
+    lines = processed_sql.split('\n')
+    for index, line in enumerate(lines):
+        if '/*' in line and '*/' in line:
+            line = line.replace('/*', '--')
+            line = line.replace('*/', '')
+            lines[index] = line
+    return '\n'.join(lines)
+
+
 def main(sql: str):
+    sql: str = replace_comment_with_block(sql)
     tokens: list = get_tokens(sql)
     upper_case(tokens)
     linked_list: LinkedList = LinkedList()
     linked_list.build_from_array(tokens)
     lower_case(linked_list)
     fix_commas(linked_list)
-    return process_tokens(linked_list)
+    processed_sql: str = process_tokens(linked_list)
+    return replace_single_block_comments(processed_sql)
 
 
 def upper_case(tokens: list):
@@ -145,4 +167,4 @@ def get_tokens(sql):
 
 
 if __name__ == "__main__":
-    print(main(get_sql("company_code/test_3_input.sql")))
+    print(main(get_sql("company_code/etl_dim_views.accounts.sql")))

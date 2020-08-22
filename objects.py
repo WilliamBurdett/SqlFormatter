@@ -68,7 +68,7 @@ class Operation:
         self.special_node = special_node
 
     def __str__(self):
-        objects: list = []
+        objects: list[str] = []
         if self.indent_direction != 0:
             objects.extend([f"indent_direction:", str(self.indent_direction)])
         if self.return_after is not True:
