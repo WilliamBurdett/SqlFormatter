@@ -7,9 +7,10 @@ class Node:
         self.data: str = data
         self._prev_node: Node = None
         self._next_node: Node = None
-        self._prev_node_original: Node = None
-        self._next_node_original: Node = None
+        self.prev_node_original: Node = None
+        self.next_node_original: Node = None
         self.node_id: int = node_id
+        self.special_operation: Operation = None
 
     @property
     def next_node(self):
@@ -18,8 +19,8 @@ class Node:
     @next_node.setter
     def next_node(self, node):
         self._next_node = node
-        if self._next_node_original is None:
-            self._next_node_original = node
+        if self.next_node_original is None:
+            self.next_node_original = node
 
     @property
     def prev_node(self):
@@ -28,16 +29,8 @@ class Node:
     @prev_node.setter
     def prev_node(self, node):
         self._prev_node = node
-        if self._prev_node_original is None:
-            self._prev_node_original = node
-
-    @property
-    def next_node_original(self):
-        return self._next_node_original
-
-    @property
-    def prev_node_original(self):
-        return self._prev_node_original
+        if self.prev_node_original is None:
+            self.prev_node_original = node
 
     def __str__(self):
         prev_data: str = "None"
@@ -46,10 +39,15 @@ class Node:
         next_data: str = "None"
         if self.next_node is not None:
             next_data = self.next_node.data
-        return f"(\"{prev_data}\" | \"{self.data}\" | \"{next_data}\" | \"{self.node_id}\")"
+        return f'("{prev_data}" | "{self.data}" | "{next_data}" | {self.node_id})'
 
     def __hash__(self):
         return self.node_id
+
+    def __eq__(self, other):
+        if not isinstance(other, Node):
+            return NotImplemented
+        return self.node_id == other.node_id
 
 
 class Operation:
@@ -61,18 +59,13 @@ class Operation:
         no_return_node: Node = None,
         no_space: bool = False,
         special_node: Node = None,
-        special_operation=None,
     ):
-        if ((special_node is None and special_operation is not None)
-                or (special_node is not None and special_operation is None)):
-            raise ValueError("You must fill both special_node and special_operation")
         self.indent_direction = indent_direction
         self.return_after = return_after
         self.previous_indent = previous_indent
         self.no_return_node = no_return_node
         self.no_space = no_space
         self.special_node = special_node
-        self.special_operation = special_operation
 
     def __str__(self):
         objects: list = []
@@ -87,14 +80,7 @@ class Operation:
         if self.no_space is True:
             objects.extend([f"no_space:", str(self.no_space)])
         if self.special_node is not None:
-            objects.extend(
-                [
-                    f"special_node:",
-                    str(self.special_node),
-                    f"special_operation:",
-                    str(self.special_operation),
-                ]
-            )
+            objects.extend([f"special_node:", str(self.special_node)])
 
         return f"({' '.join(objects)})"
 
@@ -186,7 +172,7 @@ class LinkedList:
 
     @debug_output
     def insert_before(self, node: Node, data: str):
-        new_node = Node(data, self.get_ids())
+        new_node = Node(data, self.get_new_id())
         prev_node = node.prev_node
 
         node.prev_node = new_node
@@ -198,7 +184,7 @@ class LinkedList:
 
     @debug_output
     def insert_after(self, node: Node, data: str):
-        new_node = Node(data, self.get_ids())
+        new_node = Node(data, self.get_new_id())
         next_node = node.next_node
         node.next_node = new_node
 
@@ -208,11 +194,23 @@ class LinkedList:
 
         new_node.prev_node = node
 
+        return new_node
+
 
 class Indent:
     def __init__(self, spaces: int = 4):
-        self.indent = 0
+        self._indent = 0
+        self.previous_indent = 0
         self.spaces = spaces
+
+    @property
+    def indent(self):
+        return self._indent
+
+    @indent.setter
+    def indent(self, indent: int):
+        self.previous_indent = self._indent
+        self._indent = indent
 
     def modify_indent(self, direction):
         self.indent += direction
@@ -224,4 +222,4 @@ class Indent:
         return "".join([" "] * self.indent * self.spaces)
 
     def __str__(self):
-        return f"{self.indent}"
+        return f"{self.previous_indent}-{self.indent}"
