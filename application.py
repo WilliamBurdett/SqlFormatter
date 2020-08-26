@@ -40,23 +40,23 @@ def fix_commas(linked_list: LinkedList):
 
 
 def replace_comment_with_block(sql):
-    lines = sql.split('\n')
+    lines = sql.split("\n")
     for index, line in enumerate(lines):
-        if '--' in line:
-            line = line.replace('--', '/* ')
-            line = f'{line} */'
+        if "--" in line:
+            line = line.replace("--", "/* ")
+            line = f"{line} */"
             lines[index] = line
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 def replace_single_block_comments(processed_sql: str):
-    lines = processed_sql.split('\n')
+    lines = processed_sql.split("\n")
     for index, line in enumerate(lines):
-        if '/*' in line and '*/' in line:
-            line = line.replace('/*', '--')
-            line = line.replace('*/', '')
+        if "/*" in line and "*/" in line:
+            line = line.replace("/*", "--")
+            line = line.replace(" */", "")
             lines[index] = line
-    return '\n'.join(lines)
+    return "\n".join(lines)
 
 
 def main(sql: str):
@@ -106,7 +106,7 @@ def process_tokens(linked_list: LinkedList):
             special_nodes[operation.special_node] = indent.indent
         if node.special_operation is not None:
             special_operation = node.special_operation
-            default = Operation()
+            default = Operation(None)
             for variable in default.__dict__.keys():
                 default_variable = getattr(default, variable)
                 special_operation_variable = getattr(special_operation, variable)
@@ -116,17 +116,17 @@ def process_tokens(linked_list: LinkedList):
                     open_indent = special_nodes[node]
                     indent.indent = open_indent
 
-        debub_linked_list.append(
-            "\n".join(
-                [
-                    str(f"previous_newline: {previous_newline}"),
-                    str(f"indent: {indent}"),
-                    str(f"operation: {operation}"),
-                    "node:" + str(node).replace("\n", "\\n"),
-                ]
-            )
-            + "\n"
-        )
+        # debub_linked_list.append(
+        #     "\n".join(
+        #         [
+        #             str(f"previous_newline: {previous_newline}"),
+        #             str(f"indent: {indent}"),
+        #             str(f"operation: {operation}"),
+        #             "node:" + str(node).replace("\n", "\\n"),
+        #         ]
+        #     )
+        #     + "\n"
+        # )
         debub_linked_list.append("\n")
 
         #  Preforms the actual linked list modifications based on the operation
@@ -162,9 +162,9 @@ def process_tokens(linked_list: LinkedList):
 
 
 def get_tokens(sql):
-    regex = r"[a-zA-Z0-9,><_\-\\\/\"\'\.\*\=\|]+|[()]"
+    regex = r"[a-zA-Z0-9><_;\-\\\/\"\'\.\*\=\|]+|[,()]"
     return re.findall(regex, sql)
 
 
 if __name__ == "__main__":
-    print(main(get_sql("company_code/etl_dim_views.accounts.sql")))
+    print(main(get_sql("company_code/etl_dim_views.articles.sql")))

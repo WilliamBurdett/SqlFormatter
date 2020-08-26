@@ -10,7 +10,15 @@ class Node:
         self.prev_node_original: Node = None
         self.next_node_original: Node = None
         self.node_id: int = node_id
-        self.special_operation: Operation = None
+        self._special_operation: Operation = None
+
+    @property
+    def special_operation(self):
+        return self._special_operation
+
+    @special_operation.setter
+    def special_operation(self, operation):
+        self._special_operation = operation
 
     @property
     def next_node(self):
@@ -53,13 +61,15 @@ class Node:
 class Operation:
     def __init__(
         self,
+        return_after: bool,
+        no_space: bool = None,
         indent_direction: int = 0,
-        return_after: bool = True,
         previous_indent: int = 0,
         no_return_node: Node = None,
-        no_space: bool = False,
         special_node: Node = None,
     ):
+        if return_after is False and no_space is None:
+            raise ValueError("With return_after False you must pass in no_space")
         self.indent_direction = indent_direction
         self.return_after = return_after
         self.previous_indent = previous_indent
@@ -71,13 +81,13 @@ class Operation:
         objects: list[str] = []
         if self.indent_direction != 0:
             objects.extend([f"indent_direction:", str(self.indent_direction)])
-        if self.return_after is not True:
+        if self.return_after is not None:
             objects.extend([f"return_after:", str(self.return_after)])
         if self.indent_direction != 0:
             objects.extend([f"previous_indent:", str(self.previous_indent)])
         if self.no_return_node is not None:
             objects.extend([f"no_return_node:", str(self.no_return_node)])
-        if self.no_space is True:
+        if self.no_space is not None:
             objects.extend([f"no_space:", str(self.no_space)])
         if self.special_node is not None:
             objects.extend([f"special_node:", str(self.special_node)])

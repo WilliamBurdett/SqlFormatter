@@ -133,3 +133,5 @@ dmypy.json
 
 # Private files
 company_code/
+tests.py
+tests/
