@@ -5,6 +5,12 @@ import application
 from os import walk
 
 
+class SQL:
+    def __init__(self, actual: str, expected: str):
+        self.actual: str = actual
+        self.expected: str = expected
+
+
 def get_file_names_with_expected(path):
     all_file_names = []
     for (dir_path, dir_names, file_names) in walk(path):
@@ -19,28 +25,30 @@ def get_file_names_with_expected(path):
 
 def preform_tests():
     path = "company_code"
-    first_error = {}
+    first_error = None
     for file_name in get_file_names_with_expected(path):
         input_path = f"{path}/{file_name.replace('_expected', '')}"
+        print(input_path)
         actual_sql = application.main(application.get_sql(input_path))
         expected_sql = application.get_sql(f"{path}/{file_name}")
         if actual_sql != expected_sql:
             print(file_name)
-            if len(first_error) == 0:
-                first_error[actual_sql] = expected_sql
+            first_error = SQL(actual_sql, expected_sql)
+            break
 
-    actual_path = f"company_code/{random.randint(0,10000)}_actual.sql"
-    expected_path = f"company_code/{random.randint(0,10000)}_expected.sql"
+    if first_error is not None:
+        actual_path = f"company_code/{random.randint(0,10000)}_actual.sql"
+        expected_path = f"company_code/{random.randint(0,10000)}_expected.sql"
 
-    with open(actual_path, "w") as file:
-        file.write([key for key in first_error.keys()][0])
-    with open(expected_path, "w") as file:
-        file.write([values for values in first_error.values()][0])
+        with open(actual_path, "w") as file:
+            file.write(first_error.actual)
+        with open(expected_path, "w") as file:
+            file.write(first_error.expected)
 
-    os.system(f"diff {actual_path} {expected_path}")
+        os.system(f"diff {actual_path} {expected_path}")
 
-    os.remove(actual_path)
-    os.remove(expected_path)
+        os.remove(actual_path)
+        os.remove(expected_path)
 
 
 if __name__ == "__main__":

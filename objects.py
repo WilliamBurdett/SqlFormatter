@@ -11,6 +11,8 @@ class Node:
         self.next_node_original: Node = None
         self.node_id: int = node_id
         self._special_operation: Operation = None
+        self.final_operation: Operation = None
+        self.no_return_status = None
 
     @property
     def special_operation(self):
@@ -95,6 +97,36 @@ class Operation:
         return f"({' '.join(objects)})"
 
 
+class Direction:
+    def __init__(self, direction: str):
+        self._direction: str = direction
+
+    @property
+    def direction(self):
+        return self._direction
+
+    def get_next_node(self, node: Node):
+        if self._direction == "left":
+            return node.prev_node_original
+        return node.next_node
+
+    @staticmethod
+    def left():
+        return Direction("left")
+
+    @staticmethod
+    def right():
+        return Direction("right")
+
+    def __eq__(self, other):
+        if not isinstance(other, Direction):
+            return NotImplemented
+        return other.direction == self._direction
+
+    def __str__(self):
+        return self._direction
+
+
 class LinkedList:
     def __init__(self):
         self.head: Node = None
@@ -148,17 +180,12 @@ class LinkedList:
 
     @staticmethod
     @debug_output
-    def get_distance_to_data(node: Node, data: str, direction: int):
-        if direction not in [-1, 1]:
-            raise ValueError("direction but be 1 or -1")
+    def get_distance_to_data(node: Node, data: str, direction: Direction):
         count = 0
         temp_node = node
         while temp_node is not None:
             count += 1
-            if direction == -1:
-                temp_node = temp_node.prev_node
-            if direction == 1:
-                temp_node = temp_node.next_node
+            temp_node = direction.get_next_node(temp_node)
             if temp_node is None:
                 return -1
             if temp_node.data.isspace() or temp_node.data == "":
@@ -169,10 +196,9 @@ class LinkedList:
 
     @staticmethod
     @debug_output
-    def get_distance_to_node(starting_node: Node, target_node: Node, direction: int):
-        if direction not in [-1, 1]:
-            raise ValueError("direction but be 1 or -1")
-
+    def get_distance_to_node(
+        starting_node: Node, target_node: Node, direction: Direction
+    ):
         if target_node is None:
             return -1
 
@@ -180,10 +206,34 @@ class LinkedList:
             starting_node, target_node.data, direction
         )
 
+    @staticmethod
+    @debug_output
+    def get_next_node_with_data(starting_node: Node, data: str, direction: Direction):
+        target_node = direction.get_next_node(starting_node)
+
+        while target_node is not None:
+            if target_node.data == data:
+                return target_node
+            target_node = direction.get_next_node(target_node)
+
+    @staticmethod
+    @debug_output
+    def get_first_node_of_line(starting_node: Node):
+        return_node: Node = starting_node
+        length: int = 0
+        while return_node.data != "\n":
+            return_node = return_node.prev_node
+            length += len(return_node.data)
+        target_node: Node = return_node
+        while target_node.data.replace(" ", "") == "" or target_node.data == "\n":
+            target_node = target_node.next_node
+            length -= len(target_node.data)
+        return target_node, length
+
     @debug_output
     def insert_before(self, node: Node, data: str):
-        new_node = Node(data, self.get_new_id())
-        prev_node = node.prev_node
+        new_node: Node = Node(data, self.get_new_id())
+        prev_node: Node = node.prev_node
 
         node.prev_node = new_node
         if prev_node is not None:
@@ -194,8 +244,8 @@ class LinkedList:
 
     @debug_output
     def insert_after(self, node: Node, data: str):
-        new_node = Node(data, self.get_new_id())
-        next_node = node.next_node
+        new_node: Node = Node(data, self.get_new_id())
+        next_node: Node = node.next_node
         node.next_node = new_node
 
         if next_node is not None:
@@ -209,9 +259,9 @@ class LinkedList:
 
 class Indent:
     def __init__(self, spaces: int = 4):
-        self._indent = 0
-        self.previous_indent = 0
-        self.spaces = spaces
+        self._indent: int = 0
+        self.previous_indent: int = 0
+        self.spaces: int = spaces
 
     @property
     def indent(self):
